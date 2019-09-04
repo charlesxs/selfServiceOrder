@@ -18,11 +18,19 @@
                 <Button
                     style="margin-top: 10px"
                     type="primary"
-                    @click="processOrder">
+                    @click="modal1 = true">
                     下订单
                 </Button>
             </Drawer>
         </div>
+
+        <Modal
+                v-model="modal1"
+                title="订单提醒"
+                @on-ok="ok"
+                @on-cancel="cancel">
+            <p>您的订单已经生成，请耐心等待片刻，精致美味马上就好。</p>
+        </Modal>
         <Divider />
 
         <!-- 分类-->
@@ -78,6 +86,7 @@
       return {
         cartNum: 0,
         drawer: false,
+        modal1: false,
         categorys: [
           ['分类',
             {content: '蛋糕', active: false},
@@ -162,7 +171,7 @@
         this.amount -= food.price
       },
       processOrder() {
-        // 处理订单
+
       }
     }
   }
