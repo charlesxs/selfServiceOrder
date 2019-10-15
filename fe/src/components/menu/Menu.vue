@@ -18,7 +18,7 @@
                 <Button
                     style="margin-top: 10px"
                     type="primary"
-                    @click="modal1 = true">
+                    @click="goMyOrder">
                     下订单
                 </Button>
             </Drawer>
@@ -26,9 +26,7 @@
 
         <Modal
                 v-model="modal1"
-                title="订单提醒"
-                @on-ok="ok"
-                @on-cancel="cancel">
+                title="订单提醒">
             <p>您的订单已经生成，请耐心等待片刻，精致美味马上就好。</p>
         </Modal>
         <Divider />
@@ -80,13 +78,15 @@
 </template>
 
 <script>
+  import uuidv4 from 'uuid/v4'
+
   export default {
     name: "Menu",
     data() {
       return {
         cartNum: 0,
         drawer: false,
-        modal1: false,
+        modal1: !!this.$route.query.pay,
         categorys: [
           ['分类',
             {content: '蛋糕', active: false},
@@ -170,8 +170,17 @@
         food.added = false
         this.amount -= food.price
       },
-      processOrder() {
+      goMyOrder() {
+        let order = {
+          id: uuidv4(),
+          amount: this.amount,
+          payment: '未支付',
+          createTime: (new Date().toISOString()).replace('T', ' ').replace(/\.[0-9]+Z$/, ''),
+          detail: this.shoppingCart
+        }
 
+        this.$store.commit('pushOrder', order)
+        this.$router.push({path: '/order'})
       }
     }
   }

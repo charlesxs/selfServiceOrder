@@ -3,15 +3,23 @@
 import Index from '@/components/index.js';
 import Menu from '@/components/menu';
 import { EditMenu } from '@/components/menu';
-import { Order, EditOrder } from '@/components/order';
+import { Order, EditOrder, Payment } from '@/components/order';
 import { CashFlow, HotFood } from '@/components/statistics';
 import Employee from "@/components/employee";
+import LogIn from "@/components/LogIn";
 
 const routers = [
   {
     // 通配符匹配，* 会匹配所有路径, order-* 会匹配以order开头的路由
     path: '*',
     component: Index
+  },
+  {
+    path: '/login',
+    component: LogIn,
+    meta: {
+      visible: '登录界面'
+    }
   },
   {
     path: '/menu',
@@ -61,6 +69,9 @@ const routers = [
     meta: {
       visible: '员工管理'
     }
+  },{
+    path: '/payment',
+    component: Payment
   }
 ];
 

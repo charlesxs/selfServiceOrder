@@ -1,6 +1,9 @@
 <template>
-    <div style="margin-top: 15px">
-        <h2>我的订单</h2>
+    <div>
+        <div class="menu-box">
+            <span class="menu" style="margin-top: 10px">我的订单</span>
+            <Button type="primary" @click="goPayment">确认支付</Button>
+        </div>
         <Divider />
 
         <Row class="mm"
@@ -54,42 +57,49 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex'
+
   export default {
     name: "Order",
     data() {
       return {
-        order: {
-          id: '97b015b8-c08e-42bd-932f-9e147e53aa8d',
-          amount: 88,
-          payment: '未支付',
-          createTime: '2019-08-25 12:03:00',
-          detail: [
-            {
-              id: 1,
-              imagePath: require('../../assets/yutoupaobing.jpg'),
-              name: '鱼头泡饼',
-              intro: '俺家鱼头泡饼很好吃',
-              price: 30,
-              added: false
-            },
-            {
-              id: 2,
-              imagePath: require('../../assets/malaxiangguo.jpg'),
-              name: '麻辣香锅',
-              intro: '麻辣香锅很辣',
-              price: 18,
-              added: false
-            },
-            {
-              id: 3,
-              imagePath: require('../../assets/wuhankaoquanyu.jpg'),
-              name: '巫山烤全鱼',
-              intro: '巫山烤全鱼',
-              price: 40,
-              added: false
-            }
-          ]
-        }
+      //   order: {
+      //     id: '97b015b8-c08e-42bd-932f-9e147e53aa8d',
+      //     amount: 88,
+      //     payment: '未支付',
+      //     createTime: '2019-08-25 12:03:00',
+      //     detail: [
+      //       {
+      //         id: 1,
+      //         imagePath: require('../../assets/yutoupaobing.jpg'),
+      //         name: '鱼头泡饼',
+      //         intro: '俺家鱼头泡饼很好吃',
+      //         price: 30,
+      //         added: false
+      //       },
+      //       {
+      //         id: 2,
+      //         imagePath: require('../../assets/malaxiangguo.jpg'),
+      //         name: '麻辣香锅',
+      //         intro: '麻辣香锅很辣',
+      //         price: 18,
+      //         added: false
+      //       },
+      //       {
+      //         id: 3,
+      //         imagePath: require('../../assets/wuhankaoquanyu.jpg'),
+      //         name: '巫山烤全鱼',
+      //         intro: '巫山烤全鱼',
+      //         price: 40,
+      //         added: false
+      //       }
+      //     ]
+      //   }
+      }
+    },
+    methods: {
+      goPayment() {
+        this.$router.push({path: '/payment'})
       }
     },
     computed: {
@@ -98,12 +108,26 @@
           return 'green'
         }
         return 'red'
-      }
+      },
+      ...mapState([
+        'order',
+    ])
     }
   }
 </script>
 
 <style scoped>
+
+    .menu-box {
+        display: flex;
+        padding: 0 5px 0 5px;
+
+        justify-content: space-between;
+    }
+    .menu {
+        font-size: 17px;
+    }
+
     .mm {
         margin: 10px 0 10px 0;
     }
