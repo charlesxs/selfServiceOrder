@@ -36,7 +36,7 @@ def make_app():
     return app
 
 
-def run():
+def run(debug=True):
     app = make_app()
-    app.run()
+    app.run(debug=debug)
 

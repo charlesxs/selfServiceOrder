@@ -1,8 +1,11 @@
 # coding=utf-8
 #
 
-from app.web.webapp import run
-from app.config import CONF
+import sys
+sys.path.append('/Users/charles/Documents/projects/myProjects/selfServiceOrder')
+
+from app.web.webapp import run  # noqa
+from app.config import CONF     # noqa
 
 
 if __name__ == '__main__':

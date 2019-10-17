@@ -1,11 +1,11 @@
 <template>
     <div style="background-color: #f3f3f3; height: 700px">
         <Row class="content">
-            <Col span="22" style="font-size: 15px">
+            <Col span="21" style="font-size: 15px">
                 <Row>自助点餐系统收银台</Row>
                 <Row style="font-size: 13px; margin-top: 5px">订单编号: {{ order.id }}</Row>
             </Col>
-            <Col span="2" style="margin-top: 10px">
+            <Col span="3" style="margin-top: 10px">
                 <span style="font-size: 20px; color: #ef2b13; font-weight: bold;">{{ order.amount }}.00</span> 元
             </Col>
         </Row>
@@ -23,6 +23,8 @@
 
 <script>
   import { mapState } from 'vuex'
+  import axios from 'axios'
+
   export default {
     name: "Payment",
     data() {
@@ -35,9 +37,17 @@
       ])
     },
     mounted() {
-      setTimeout(() => {
-        this.$router.push({path: '/menu', query: {pay: 'true'}})
-      }, 3000)
+      // 生成订单
+      axios.post('/generate_order',
+        {data: this.order})
+        .then(resp => {
+          setTimeout(() => {
+            this.$router.push({path: '/menu', query: {pay: 'true'}})
+          }, 3000)
+        })
+        .catch(err => {
+          this.$Message.error(`订单生成失败: ${err}`)
+        })
     }
   }
 </script>

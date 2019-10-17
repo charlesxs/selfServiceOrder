@@ -48,10 +48,9 @@
         <Divider />
 
         <!--菜品详情-->
-
         <div v-for="(food, i) in foods" :key="i">
             <Row :gutter=6>
-                <Col span="7"><img :src="food.imagePath" alt=""></Col>
+                <Col span="7"><img :src="food.imagePath" alt="" style="width: 220px; height: 125px"></Col>
                 <Col span="14" style="font-size: 14px">
                     <Row style="margin-bottom: 10px">菜名: {{ food.name }}</Row>
                     <Row style="margin-bottom: 10px">介绍: {{ food.intro }}</Row>
@@ -79,6 +78,8 @@
 
 <script>
   import uuidv4 from 'uuid/v4'
+  import axios from 'axios'
+  import _ from 'lodash'
 
   export default {
     name: "Menu",
@@ -112,40 +113,7 @@
         ],
         selectedCategory: [],
         shoppingCart: [],
-        foods: [
-          {
-            id: 1,
-            imagePath: require('../../assets/yutoupaobing.jpg'),
-            name: '鱼头泡饼',
-            intro: '俺家鱼头泡饼很好吃',
-            price: 30,
-            added: false
-          },
-          {
-            id: 2,
-            imagePath: require('../../assets/malaxiangguo.jpg'),
-            name: '麻辣香锅',
-            intro: '麻辣香锅很辣',
-            price: 18,
-            added: false
-          },
-          {
-            id: 3,
-            imagePath: require('../../assets/wuhankaoquanyu.jpg'),
-            name: '巫山烤全鱼',
-            intro: '巫山烤全鱼',
-            price: 40,
-            added: false
-          },
-          {
-            id: 4,
-            imagePath: require('../../assets/yutoupaobing.jpg'),
-            name: '鱼头泡饼',
-            intro: '鱼头泡饼很好吃，哈哈哈',
-            price: 30,
-            added: false
-          }
-        ],
+        foods: [],
         amount: 0
       }
     },
@@ -176,12 +144,23 @@
           amount: this.amount,
           payment: '未支付',
           createTime: (new Date().toISOString()).replace('T', ' ').replace(/\.[0-9]+Z$/, ''),
-          detail: this.shoppingCart
+          detail: this.shoppingCart,
+          username: 'xiaoshuang'
         }
 
         this.$store.commit('pushOrder', order)
         this.$router.push({path: '/order'})
       }
+    },
+    mounted() {
+      axios.get('/menu')
+        .then(resp => {
+          let foods = _.orderBy(resp.data.data, ['id'], ['asc'])
+          this.foods.push(...foods)
+        })
+        .catch(err => {
+          this.$Message.error(`菜单加载失败: ${err}`)
+        })
     }
   }
 </script>

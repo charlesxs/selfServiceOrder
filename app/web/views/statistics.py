@@ -1,13 +1,15 @@
 # coding=utf-8
 #
 
+from __future__ import division
 from datetime import datetime, timedelta
 from flask import Blueprint
 from flask import request, Response
 from flask import session
 from sqlalchemy import func
-from app.db.models.tables import OrderModel, OrderDetailModel, MenuModel
+from app.db.models.tables import OrderModel, OrderDetailModel, MenuModel, UserModel
 from app.db.models.base import DB
+from app.lib.utils import jsonify
 
 bp = Blueprint('statistics', __name__)
 
@@ -18,18 +20,13 @@ def hot_food():
     统计所选月份Top10 热门食物
     :return:
     """
-    if not session.get('is_login'):
-        return Response({
-            'code': 403,
-            'message': 'require login'
-        }, status=403, content_type='application/json')
-
-    month = request.args.get('month')
+    month = int(request.args.get('month'))
     start_time = datetime(year=datetime.now().year, month=month, day=1)
-    end_time = start_time + timedelta(weeks=1)
-
+    end_time = datetime(year=datetime.now().year, month=month + 1, day=1)
+    # 最高热度是5
+    hot_rate = 5
     models = DB.session.query(OrderDetailModel.mid, func.count(OrderDetailModel.id).label('count'))\
-        .join(OrderModel, OrderModel.old == OrderDetailModel.oid)\
+        .join(OrderModel, OrderModel.id == OrderDetailModel.oid)\
         .filter(OrderModel.create_time >= start_time)\
         .filter(OrderModel.create_time < end_time)\
         .group_by(OrderDetailModel.mid)\
@@ -37,21 +34,26 @@ def hot_food():
         .limit(10)\
         .all()
 
+    if not models:
+        return jsonify([])
+
+    count_map = {m.mid: m.count for m in models}
+    # 计算 从被点次数 -> 热度的 映射因子
+    mapping_factor = hot_rate / max(count_map.keys())
+
     food_models = MenuModel.query.filter(MenuModel.mid.in_([m.mid for m in models])).all()
     result = [dict(
-        id=food.id,
-        name=food.name,
-        imgPath=food.imgPath,
+        id=food.mid,
+        name=food.foodname,
+        imagePath=food.imagepath,
         intro=food.intro,
         category=food.category,
-        price=food.price
+        price=food.price,
+        count=count_map[food.mid],
+        rate=round(count_map[food.mid] * mapping_factor, 2)
     ) for food in food_models]
 
-    return Response({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }, status=200, content_type='application/json')
+    return jsonify(result)
 
 
 @bp.route('/cash_flow', methods=['GET'])
@@ -60,35 +62,31 @@ def cash_flow():
     统计/打印 所选月份流水及明细
     :return:
     """
-    if not session.get('is_login'):
-        return Response({
-            'code': 403,
-            'message': 'require login'
-        }, status=403, content_type='application/json')
-    month = request.args.get('month')
+    month = int(request.args.get('month'))
     start_time = datetime(year=datetime.now().year, month=month, day=1)
-    end_time = start_time + timedelta(weeks=1)
+    end_time = datetime(year=datetime.now().year, month=month + 1, day=1)
+    date_fmt = '%Y-%m-%d %H:%M:%S'
 
     models = OrderModel.query\
         .filter(OrderModel.create_time >= start_time)\
         .filter(OrderModel.create_time < end_time)\
         .all()
 
-    total_amount, orders = 0, []
+    orders = []
     for m in models:
-        total_amount += m.amount
-        orders.append({
+        order = {
             'oid': m.oid,
             'status': m.status,
-            'create_time': m.create_time,
-            'update_time': m.update_time,
+            'create_time': m.create_time.strftime(date_fmt),
+            'update_time': m.update_time.strftime(date_fmt),
             'comment': m.comment,
             'amount': m.amount,
-            'payment_status': m.payment_status
-        })
+            'payment': m.payment_status
+        }
 
-    return Response({
-        'code': 200,
-        'message': 'success',
-        'data': {'total_amount': total_amount, 'orders': orders}
-    }, status=200, content_type='application/json')
+        user = UserModel.query\
+            .filter(UserModel.uid == m.uid)\
+            .first()
+        order['username'] = user.nickname
+        orders.append(order)
+    return jsonify(orders)

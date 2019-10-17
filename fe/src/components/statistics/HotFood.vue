@@ -4,7 +4,7 @@
             <span style="font-size: 17px;">热门食物统计</span>
             <span>
                 选择月份:
-                <Select v-model="selectedMonth" style="width:200px">
+                <Select v-model="selectedMonth" style="width:200px" @on-change="calcHotRate">
                     <Option v-for="item in months" :value="item.value" :key="item.value">{{ item.label }}</Option>
                 </Select>
             </span>
@@ -32,11 +32,14 @@
 </template>
 
 <script>
+  import _ from 'lodash'
+  import axios from 'axios'
+
   export default {
     name: "HotFood",
     data() {
       return {
-        selectedMonth: 8,
+        selectedMonth: 0,
         months: [
           {value: 1, label: '1月份'},
           {value: 2, label: '2月份'},
@@ -52,39 +55,49 @@
           {value: 12, label: '12月份'}
         ],
         foods: [
-          {
-            id: 1,
-            imagePath: require('../../assets/yutoupaobing.jpg'),
-            name: '鱼头泡饼',
-            price: 30,
-            rate: 5,
-            count: 300
-          },
-          {
-            id: 2,
-            imagePath: require('../../assets/malaxiangguo.jpg'),
-            name: '麻辣香锅',
-            price: 18,
-            rate: 4.5,
-            count: 230
-          },
-          {
-            id: 3,
-            imagePath: require('../../assets/wuhankaoquanyu.jpg'),
-            name: '巫山烤全鱼',
-            price: 40,
-            rate: 4,
-            count: 200
-          },
-          {
-            id: 4,
-            imagePath: require('../../assets/yutoupaobing.jpg'),
-            name: '鱼头泡饼',
-            price: 30,
-            rate: 3,
-            count: 100
-          }
+          // {
+          //   id: 1,
+          //   imagePath: require('../../assets/yutoupaobing.jpg'),
+          //   name: '鱼头泡饼',
+          //   price: 30,
+          //   rate: 5,
+          //   count: 300
+          // },
+          // {
+          //   id: 2,
+          //   imagePath: require('../../assets/malaxiangguo.jpg'),
+          //   name: '麻辣香锅',
+          //   price: 18,
+          //   rate: 4.5,
+          //   count: 230
+          // },
+          // {
+          //   id: 3,
+          //   imagePath: require('../../assets/wuhankaoquanyu.jpg'),
+          //   name: '巫山烤全鱼',
+          //   price: 40,
+          //   rate: 4,
+          //   count: 200
+          // }
         ]
+      }
+    },
+    methods: {
+      calcHotRate(month) {
+        axios
+          .get('/hot_food', {params: {month: month}})
+          .then(r => {
+            let foods = r.data.data
+
+            if (foods && foods.length > 1) {
+              this.foods = _.orderBy(r.data.data, ['rate'], ['desc'])
+            } else {
+              this.$Message.warning('所选月份没有订单')
+            }
+          })
+          .catch(e => {
+            this.$Message.error(`加载热门食物失败: ${e}`)
+          })
       }
     }
   }

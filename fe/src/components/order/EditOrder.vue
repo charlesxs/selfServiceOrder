@@ -13,7 +13,11 @@
                          :gutter="10"
                          style="font-size: 14px">
                         <Col span="2">订单ID: </Col>
-                        <Col>{{ order.id }}</Col>
+                        <Col span="17">{{ order.id }}</Col>
+
+                        <Col span="5">
+                            <Button size="small" type="success" @click="editOrder(order)">确认修改</Button>
+                        </Col>
                     </Row>
 
                     <Row class="mm"
@@ -59,7 +63,7 @@
                                 </Col>
 
                                 <Col span="3" style="font-size: 20px; cursor: pointer">
-                                    <Icon style="color: red" type="ios-trash-outline" />
+                                    <Icon style="color: red" type="ios-trash-outline" @click="deleteFood(order, food)" />
                                 </Col>
                                 <Divider />
                             </Row>
@@ -73,6 +77,9 @@
 </template>
 
 <script>
+  import axios from 'axios'
+  import _ from 'lodash'
+
   export default {
     name: "EditOrder",
     data() {
@@ -80,72 +87,72 @@
         defaultCollapse: '0',
         payState: ['未支付', '已支付'],
         orders: [
-          {
-            username: '张三',
-            id: '97b015b8-c08e-42bd-932f-9e147e53aa8d',
-            amount: 88,
-            payment: '未支付',
-            createTime: '2019-08-25 12:03:00',
-            detail: [
-              {
-                id: 1,
-                imagePath: require('../../assets/yutoupaobing.jpg'),
-                name: '鱼头泡饼',
-                intro: '俺家鱼头泡饼很好吃',
-                price: 30,
-                added: false
-              },
-              {
-                id: 2,
-                imagePath: require('../../assets/malaxiangguo.jpg'),
-                name: '麻辣香锅',
-                intro: '麻辣香锅很辣',
-                price: 18,
-                added: false
-              },
-              {
-                id: 3,
-                imagePath: require('../../assets/wuhankaoquanyu.jpg'),
-                name: '巫山烤全鱼',
-                intro: '巫山烤全鱼',
-                price: 40,
-                added: false
-              }
-            ]
-          },
-          {
-            username: '李四',
-            id: '88c015b8-c08e-42bd-932f-9e147e53aa2d',
-            amount: 88,
-            payment: '已支付',
-            createTime: '2019-08-25 11:30:00',
-            detail: [
-              {
-                id: 1,
-                imagePath: require('../../assets/yutoupaobing.jpg'),
-                name: '鱼头泡饼',
-                intro: '俺家鱼头泡饼很好吃',
-                price: 30,
-                added: false
-              },
-              {
-                id: 2,
-                imagePath: require('../../assets/malaxiangguo.jpg'),
-                name: '麻辣香锅',
-                intro: '麻辣香锅很辣',
-                price: 18,
-                added: false
-              },
-              {
-                id: 3,
-                imagePath: require('../../assets/wuhankaoquanyu.jpg'),
-                name: '巫山烤全鱼',
-                intro: '巫山烤全鱼',
-                price: 40,
-                added: false
-              }
-            ]
-          }
+          // {
+          //   username: '张三',
+          //   id: '97b015b8-c08e-42bd-932f-9e147e53aa8d',
+          //   amount: 88,
+          //   payment: '未支付',
+          //   createTime: '2019-08-25 12:03:00',
+          //   detail: [
+          //     {
+          //       id: 1,
+          //       imagePath: require('../../assets/yutoupaobing.jpg'),
+          //       name: '鱼头泡饼',
+          //       intro: '俺家鱼头泡饼很好吃',
+          //       price: 30,
+          //       added: false
+          //     },
+          //     {
+          //       id: 2,
+          //       imagePath: require('../../assets/malaxiangguo.jpg'),
+          //       name: '麻辣香锅',
+          //       intro: '麻辣香锅很辣',
+          //       price: 18,
+          //       added: false
+          //     },
+          //     {
+          //       id: 3,
+          //       imagePath: require('../../assets/wuhankaoquanyu.jpg'),
+          //       name: '巫山烤全鱼',
+          //       intro: '巫山烤全鱼',
+          //       price: 40,
+          //       added: false
+          //     }
+          //   ]
+          // },
+          // {
+          //   username: '李四',
+          //   id: '88c015b8-c08e-42bd-932f-9e147e53aa2d',
+          //   amount: 88,
+          //   payment: '已支付',
+          //   createTime: '2019-08-25 11:30:00',
+          //   detail: [
+          //     {
+          //       id: 1,
+          //       imagePath: require('../../assets/yutoupaobing.jpg'),
+          //       name: '鱼头泡饼',
+          //       intro: '俺家鱼头泡饼很好吃',
+          //       price: 30,
+          //       added: false
+          //     },
+          //     {
+          //       id: 2,
+          //       imagePath: require('../../assets/malaxiangguo.jpg'),
+          //       name: '麻辣香锅',
+          //       intro: '麻辣香锅很辣',
+          //       price: 18,
+          //       added: false
+          //     },
+          //     {
+          //       id: 3,
+          //       imagePath: require('../../assets/wuhankaoquanyu.jpg'),
+          //       name: '巫山烤全鱼',
+          //       intro: '巫山烤全鱼',
+          //       price: 40,
+          //       added: false
+          //     }
+          //   ]
+          // }
         ]
       }
     },
@@ -155,7 +162,35 @@
           return 'green'
         }
         return 'red'
+      },
+      editOrder(order) {
+        axios.post('/edit_order',
+          {'data': order})
+          .then(resp => {
+            this.$Message.success('订单修改成功')
+          })
+          .catch(err => {
+            this.$Message.error(`订单修改失败: ${err}`)
+          })
+      },
+      deleteFood(order, food) {
+        order.detail = _.filter(order.detail, item => {
+          return item.id !== food.id
+        })
+
+        order.amount = _.sumBy(order.detail, item => {
+          return item.price
+        })
       }
+    },
+    mounted() {
+        axios.get('/list_orders')
+          .then(resp => {
+            this.orders = resp.data.data
+          })
+          .catch(err => {
+            this.$Message.error(`get orders error: ${err}`)
+          })
     }
   }
 </script>

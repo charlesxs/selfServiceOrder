@@ -42,13 +42,14 @@ class MenuModel(DB.Model):
     category = Column(String)
     price = Column(Float)
     coupon = Column(Float, default=0.0)
-    imgPath = Column(String)
+    imagepath = Column(String)
     intro = Column(String)
 
 
 class OrderModel(DB.Model):
     __tablename__ = 'dt_order'
-    oid = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    oid = Column(String)
     uid = Column(Integer)
     eid = Column(Integer)
     status = Column(String)
