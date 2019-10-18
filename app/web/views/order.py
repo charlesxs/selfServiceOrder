@@ -3,7 +3,7 @@
 
 from datetime import datetime
 from flask import Blueprint
-from flask import request, Response
+from flask import request, Response, session
 from app.db.models.tables import OrderModel, OrderDetailModel, MenuModel, UserModel
 from app.db.models.base import DB
 from app.lib.utils import jsonify
@@ -130,4 +130,48 @@ def edit_order():
             ))
 
     return jsonify({'data': 'ok'})
+
+
+@bp.route('/my_order', methods=['GET'])
+def my_order():
+    username = session.get('username')
+    if not username:
+        return jsonify(None, status=403, message='请先登录')
+
+    um = UserModel.query\
+        .filter(UserModel.username == username)\
+        .first()
+    if not um:
+        return jsonify(None, status=200, message='用户不存在')
+
+    om = OrderModel.query\
+        .filter(OrderModel.uid == um.uid)\
+        .order_by(OrderModel.create_time.desc())\
+        .first()
+
+    if not om:
+        return jsonify(None, status=200, message='您还没有订单')
+
+    details_models = DB.session.query(MenuModel) \
+        .join(OrderDetailModel, OrderDetailModel.mid == MenuModel.mid) \
+        .filter(OrderDetailModel.oid == om.id).all()
+
+    detail = [dict(
+        id=d.mid,
+        foodname=d.foodname,
+        price=d.price,
+        imagePath=d.imagepath,
+        intro=d.intro,
+        category=d.category
+    ) for d in details_models]
+
+    return jsonify({
+        'id': om.oid,
+        'status': om.status,
+        'payment': om.payment_status,
+        'amount': om.amount,
+        'createTime': om.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+        'username': um.nickname,
+        'detail': detail
+    })
 

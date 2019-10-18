@@ -3,6 +3,18 @@
 
     <div class="header">
       欢迎使用自助点餐系统
+
+      <Dropdown style="float: right; margin: 0 -40px 0 0; color: #2b85e4; cursor: pointer;"
+                @on-click="onClick"
+                v-if="!isLogin"
+                >
+          <Icon type="md-person" size="20"/>
+        <DropdownMenu slot="list">
+          <DropdownItem name="order">我的订单</DropdownItem>
+          <DropdownItem name="logout">退出登录</DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
+
     </div>
 
     <div id="body">
@@ -14,9 +26,52 @@
 </template>
 
 <script>
-
+import axios from 'axios'
 export default {
-  name: 'app'
+  name: 'app',
+  data() {
+    return {
+      isLogin: false
+    }
+  },
+  methods: {
+    onClick (name) {
+      if (name === 'logout') {
+        axios
+            .get('/logout')
+            .then(r => {
+              if (r.data.message !== 'success'){
+                this.$Message.info(`${r.data.message}`)
+              } else {
+                this.$Message.success('已退出登录')
+              }
+            })
+        return
+      }
+
+      this.$router.push({path: '/' + name, query: {type: 'myOrder'}})
+    }
+  },
+  mounted() {
+    let path = this.$route.path
+    this.isLogin = path.match(/(login|^\/$)/);
+  },
+  watch: {
+    '$route'()  {
+      let path = this.$route.path
+      this.isLogin = path.match(/(login|^\/$)/);
+    }
+  },
+  // 导航守卫没生效
+  // beforeRouteUpdate(to, from, next) {
+  //   console.log(to, from)
+  //   if (to.path.match(/login/) && to.path !== from.path) {
+  //     this.isLogin = true
+  //   } else {
+  //     this.isLogin = false
+  //   }
+  //   next()
+  // }
 }
 </script>
 

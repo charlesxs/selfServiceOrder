@@ -40,6 +40,8 @@
 </template>
 
 <script>
+  import axios from 'axios'
+
   export default {
     name: "LogIn",
     data() {
@@ -50,11 +52,25 @@
     },
     methods: {
       login() {
-        if (this.username === 'xiaoshuang' && this.password === 'xiaoshuang123') {
-          this.$router.push({path: '/menu'})
-        } else {
-          this.$Message.error('用户名或密码错误')
+        if (!this.username || !this.password) {
+          this.$Message.warning('缺少用户名或密码')
+          return
         }
+
+        axios.post('/login', {
+          username: this.username,
+          password: this.password
+        })
+          .then(r => {
+            if (r.data.message !== 'success') {
+              this.$Message.error(`登录失败: ${r.data.message}`)
+            } else {
+              this.$router.push({path: '/menu'})
+            }
+          })
+          .catch(e => {
+            this.$Message.error(`登录失败: ${e}`)
+          })
       }
     }
   }

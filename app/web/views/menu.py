@@ -107,6 +107,7 @@ def delete_image():
     data = request.json.get('data')
 
     filepath = os.path.join(os.path.abspath('.'), 'fe/public/assets', data['filename'])
+    print(filepath)
     if os.path.isfile(filepath):
         os.remove(filepath)
         return jsonify(None, status=200, message='图片删除成功')

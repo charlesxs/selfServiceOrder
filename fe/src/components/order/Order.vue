@@ -1,8 +1,9 @@
 <template>
     <div>
         <div class="menu-box">
-            <span class="menu" style="margin-top: 10px">我的订单</span>
-            <Button type="primary" @click="goPayment">确认支付</Button>
+            <span class="menu" style="margin-top: 10px" v-if="type === 'myOrder'">我的订单</span>
+            <span class="menu" style="margin-top: 10px" v-else>订单详情</span>
+            <Button type="primary" @click="goPayment" v-if="type !== 'myOrder'">确认支付</Button>
         </div>
         <Divider />
 
@@ -58,11 +59,13 @@
 
 <script>
   import { mapState } from 'vuex'
+  import axios from 'axios'
 
   export default {
     name: "Order",
     data() {
       return {
+        type: this.$route.query.type || ''
       //   order: {
       //     id: '97b015b8-c08e-42bd-932f-9e147e53aa8d',
       //     amount: 88,
@@ -100,6 +103,21 @@
     methods: {
       goPayment() {
         this.$router.push({path: '/payment'})
+      },
+      getMyOrder() {
+        axios
+          .get('/my_order')
+          .then(r => {
+            if (r.data.message !== 'success') {
+              this.$Message.warning(`获取订单失败: ${r.data.message}`)
+            } else {
+              this.$store.commit('pushOrder', r.data.data)
+            }
+          })
+          .catch(e => {
+            this.$Message.info('请先登录')
+            this.$router.push({path: '/login'})
+          })
       }
     },
     computed: {
@@ -112,6 +130,19 @@
       ...mapState([
         'order',
     ])
+    },
+    mounted() {
+      if (this.type === 'myOrder') {
+        this.getMyOrder()
+      }
+    },
+    // 而beforeRouteUpdate是路由更新时触发，从主页进入登录界面不会触发这个钩子函数，一个父路由下的子路由跳转会触发这个钩子函数
+    beforeRouteUpdate(to, from, next) {
+      if (to.query.type === 'myOrder') {
+        this.type = 'myOrder'
+        this.getMyOrder()
+      }
+      next()
     }
   }
 </script>
