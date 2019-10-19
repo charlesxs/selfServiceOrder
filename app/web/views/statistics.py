@@ -39,8 +39,7 @@ def hot_food():
 
     count_map = {m.mid: m.count for m in models}
     # 计算 从被点次数 -> 热度的 映射因子
-    mapping_factor = hot_rate / max(count_map.keys())
-
+    mapping_factor = hot_rate / max(count_map.values())
     food_models = MenuModel.query.filter(MenuModel.mid.in_([m.mid for m in models])).all()
     result = [dict(
         id=food.mid,
