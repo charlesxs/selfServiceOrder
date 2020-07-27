@@ -75,8 +75,7 @@ export default {
   name: 'Index',
   // eslint-disable-next-line no-unused-vars
   render(h) {
-    const vNodes = []
-    // const vm = this
+    const vNodes = [];
 
     return (
       <div style="text-align: center; line-height: 50px; vertical-align: center">
@@ -84,16 +83,16 @@ export default {
         <Divider />
 
         {
-          routers.forEach(r => {
-            vNodes.push(
+          routers.map(r => {
+            return (
               <h2 vOn:click={() => {this.$router.push(r.path)}}>
                 {r.meta ? r.meta.visible : ''}
               </h2>
-            )
+            );
           })
         }
 
-        {...vNodes}
+       {...vNodes}    /** 这段代码没有用, 只是特殊示例. 在vue中这样写不会报错，但是react中不行, 正常也不应该这样写, JSX可以直接渲染 数组形式的component **/
       </div>
     )
   }
